@@ -12,6 +12,11 @@ tab_part=$dir_img/tab_part
 riso_conf=$dir_riso/riso.conf
 riso_part=$dir_riso/riso.part
 arq_log=$dir_riso/riso.log
+biblioteca=$dir_riso/biblioteca.sh
+
+
+#inclui a biblioteca de funções
+source $biblioteca
 
 #Função de Log
 log(){
@@ -25,11 +30,9 @@ carrega_variaveis() {
     avahi_saida=`avahi-browse -rtp _RISO._tcp | grep '='`
     servidor=`cut -d ';' -f8 <<< ${avahi_saida}` #ip do servidor.
     if [ -z $servidor ]; then
-        dialog \
-        --title 'Atencao' \
-        --ok-label 'OK' \
-        --msgbox 'Não existe nenhum servidor RISOS ativo na rede.\nVerifique a conexão e tente novamente.' \
-        0 0
+        zenity --title="Atenção" \
+        --warning --text="Não existe nenhum servidor RISOS ativo na rede.\nVerifique a conexão e tente novamente." \
+       
 	    log "ERRO: Servidor não encontrado na rede."
         exit 1
     fi
@@ -100,11 +103,9 @@ instala() {
 	        reboot
 	    fi
 	else
-		dialog \
-		--title 'Atenção' \
-		--ok-label 'OK' \
-		--msgbox '\n   Não existem imagens prontas.' \
-		7 40
+       		 zenity --title="Atenção" \
+        	--warning --text="Não existem imagens prontas."
+
 		log "ERRO: Não existem imagens prontas."
 		return 5
 	fi    
@@ -143,11 +144,9 @@ instala_windows() {
 	        reboot
 	    fi
 	else
-		dialog \
-		--title 'Atenção' \
-		--ok-label 'OK' \
-		--msgbox '\n  Você ainda não baixou a imagem do windows.' \
-		7 50
+       		 zenity --title="Atenção" \
+       		 --warning --text="Você ainda não baixou a imagem do Windows"
+
 		log "ERRO: Imagem do Windows ainda não foi baixada."
 		return 5
 	fi
@@ -193,11 +192,9 @@ instala_linux() {
 	        reboot
 	    fi
 	else
-		dialog \
-		--title 'Atenção' \
-		--ok-label 'OK' \
-		--msgbox '\n  Você ainda não baixou a imagem do linux.' \
-		7 50
+        	zenity --title="Atenção" \
+       	        --warning --text="Você ainda não baixou a imagem do Linux"
+	
 		log "Imagem do Linux ainda não foi baixada."
 		return 5
 	fi
@@ -215,11 +212,9 @@ baixa_imagens() {
 	sizelocwin="0"
 	[ -e ${img_win} ] && sizelocwin=$(du ${img_win} | cut -f1 )
 	if [ "$sizelocwin" = "$tamwindows" ]; then
-        dialog \
-        --title 'Atenção' \
-        --ok-label 'OK' \
-        --msgbox '\nA imagem do Windows no computador já é a mais recente.' \
-        7 50
+            zenity --title="Atenção" \
+       	    --warning --text="A imagem do Windows no computador já é a mais recente." \
+
 	log "ERRO: Imagem do Windows já é a mais recente."
         return 4
     fi
@@ -228,11 +223,9 @@ baixa_imagens() {
 	sizeloclin="0"
 	[ -e ${img_lin} ] && sizeloclin=$(du ${img_lin} | cut -f1)
 	if [ "$sizeloclin" = "$tamlinux" ]; then
-        dialog \
-        --title 'Atenção' \
-        --ok-label 'OK' \
-        --msgbox '\n A imagem do Linux no computador já é a mais recente.' \
-        7 50
+            zenity --title="Atenção" \
+       	    --warning --text="\n A imagem do Linux no computador já é a mais recente." \
+
 	log "ERRO: Imagem do Linux já é a mais recente."
         return 4
     fi
@@ -278,7 +271,7 @@ baixa_imagens() {
 		    # qual a porcentagem do total?
 		    PORCENTAGEM=$((copiado*100/total))
 		
-		    # envia a porcentagem para o dialog
+		    # envia a porcentagem para o zenity
 		    echo $PORCENTAGEM
 		
 		    # aguarda até a próxima checagem
@@ -290,7 +283,7 @@ baixa_imagens() {
 	    log "Download das imagens do Windows e Linux finalizado."
 	    sleep 30
 	
-    ) | dialog --title "Baixando imagens..." --gauge "Baixando imagens do Windows e Linux do servidor RISOS para maquina local" 8 50 0
+    ) | zenity --progress --title="Baixando imagens..." --text="Baixando imagens do Windows e Linux do servidor RISOS para maquina local" --auto-close
 
 	log "Finalizando rtorrent."
 	#Finaliza download
@@ -308,11 +301,9 @@ baixa_imagem_windows() {
 	sizelocwin="0"
 	[ -e ${img_win} ] && sizelocwin=$(du ${img_win} | cut -f1)
 	if [ "$sizelocwin" = "$tamwindows" ]; then
-        dialog \
-        --title 'Atenção' \
-        --ok-label 'OK' \
-        --msgbox '\n A imagem no computador já é a mais recente.' \
-        7 50
+          zenity --title="Atenção" \
+       	  --warning --text="\n A imagem no computador já é a mais recente." \
+
 	log "ERRO: A imagem do Windows é a mais recente."
         return 4
     fi
@@ -347,7 +338,7 @@ baixa_imagem_windows() {
 		    # qual a porcentagem do total?
 		    PORCENTAGEM=$((sizelocwin*100/tamwindows))
 		
-		    # envia a porcentagem para o dialog
+		    # envia a porcentagem para o zenity
 		    echo $PORCENTAGEM
 		
 		    # aguarda até a próxima checagem
@@ -359,7 +350,7 @@ baixa_imagem_windows() {
 	    log "Download do Windows finalizado."
 	    sleep 30
 	
-    ) | dialog --title "Baixando imagem..." --gauge "Baixando imagem do Windows do servidor RISOS para maquina local" 8 50 0
+    ) | zenity --progress --title="Baixando imagem..." --text="Baixando imagem do Windows do servidor RISOS para a maquina local" --auto-close 
 
 	log "Finalizando rtorrent."
 	#Finaliza download
@@ -378,11 +369,9 @@ baixa_imagem_linux() {
 	sizeloclin="0"
 	[ -e ${img_lin} ] && sizeloclin=$(du ${img_lin} | cut -f1)
 	if [ "$sizeloclin" = "$tamlinux" ]; then
-        dialog \
-        --title 'Atenção' \
-        --ok-label 'OK' \
-        --msgbox '\n A imagem no computador já é a mais recente.' \
-        7 50
+            zenity --title="Atenção" \
+       	    --warning --text="\n A imagem no computador já é a mais recente." \
+
 	log "ERRO: A imagem do Linux já é a mais recente."
         return 4
     fi
@@ -417,7 +406,7 @@ baixa_imagem_linux() {
 		    # qual a porcentagem do total?
 		    PORCENTAGEM=$((sizeloclin*100/tamlinux))
 		
-		    # envia a porcentagem para o dialog
+		    # envia a porcentagem para o zenity
 		    echo $PORCENTAGEM
 		
 		    # aguarda até a próxima checagem
@@ -428,7 +417,7 @@ baixa_imagem_linux() {
 	    echo 100
 	    log "Download do Linux finalizado."
 	    sleep 30
-    ) | dialog --title "Baixando imagem..." --gauge "Baixando imagem do Linux do servidor RISOS para maquina local" 8 50 0
+    ) | zenity --progress --title="Baixando imagem..." --text="Baixando imagem do Linux do servidor RISOS para a maquina local" --auto-close
 
 	log "Finalizando rtorrent"
 	#Finaliza download
@@ -456,12 +445,11 @@ instala_rec() {
 		reboot
 	else
 		log "ERRO: Não foi possível instalar a imagem de recuperação."
-		dialog \
-        --title 'Atenção' \
-        --ok-label 'OK' \
-        --msgbox '\n      ...NOSSA!!!, o script falhou!!!...     
-...reinicie o computador e tente outra vez...' \
-        8 50
+		
+        	zenity --title="Atenção" \
+       	        --warning --text="\n      ...NOSSA!!!, o script falhou!!!...     
+...reinicie o computador e tente outra vez..." \
+
 	fi
 
 }
@@ -496,157 +484,63 @@ baixa_rec() {
 	(scp -o StrictHostKeyChecking=no root@${servidor}:${img_rec} ./rec.tar && log "Download da imagem de recuperação finalizada.") || log "ERRO: Não foi possível realizar o download da imagem de recuperação."
 }
 
-#Define configurações do riso
-configuracoes() {
-    dialog                                          \
-    --title 'AVISO'                              \
-    --yesno '\nAlterar esse arquivo é potencialmente
-             perigoso, se não souber o que esta fazendo pare agora.\n\nDeseja continuar?'    \
-    0 0
-    if [ "$?" -eq "0" ]; then
-		log "Iniciando configuração manual do arquivo de configuração."
-		nano $riso_conf
-		log "Finalizada a edição manual do arquivo de configuração."		
-	fi
-
-}
-
-#Atualiza R.I.S.O..
-atualiza() {
-	log "Iniciando atualização do script."
-	log "Verificando disponibilidade do servidor de atualização."
-	ping -q -c 1 200.131.37.236 > /dev/null 2>&1
-	if [ "$?" -eq "0" ]; then
-		log "Iniciando download do script novo."
-		(wget 200.131.37.236/riso/riso0.5 -O /usr/riso/riso && log "RISO atualizado com sucesso.") || log "ERRO: Não foi possível baixar o novo script."
-		
-		#Menssagem de atualizado com sucesso.
-		dialog \
-	        --ok-label 'OK' \
-        	--title 'Atenção' \
-        	--msgbox '\n   RISO atualizado com sucesso.\n' \
-		    7 39
-		
-		bash /usr/riso/riso
-		exit
-	else
-		dialog \
-		--ok-label 'OK' \
-		--title 'ERRO' \
-		--msgbox '\n   Esta versão já é a mais recente'\
-		7 40
-		log "ERRO: RISO já é a versão mais nova."
-	fi
-}
-
-helpi() {
-	dialog \
-	--ok-label 'OK' \
-	--title 'Help' \
-	--msgbox '                                       \n
-		Envie um e-mail com suas duvidas e sugestões \n
-		para: "riso@comp.eng.br" e reponderei o   \n
-		mais rápido possível.'                    \
-		0 0
-}
-
-#Pessoas que desenvolveram esse material.
-creditos() {
-
-	dialog \
-	--ok-label 'OK' \
-	--title 'Creditos' \
-	--msgbox '                                       \n
-		 CENTRO FEDERAL DE EDUCAÇAO TECNOLOGICA  \n
-		        Engenharia da Computaçao         \n
-		                                         \n
-		      Cristiano Goulart Lopes Dias       \n
-		    Vinicius Tinti de Paula Oliveira     \n
-		       Germano Teixeira de Miranda       \n
-		        Gabriel de Souza Brandao         \n
-		         Marcio J. Menezes Jr.           \n
-		    Gabriel Machado de Castro Fonseca    \n
-		      André Luiz Silveira Herculano      \n
-		                                         \n
-		           www.dgo.cefetmg.br            \n
-		                                         \n'\
-		  0 0
-		  
-}
-
 #Checklist de seleção.
 menu_instala_imagens() {
 
-	opcao=$( dialog --stdout \
-	--ok-label 'Confirmar'   \
-	--checklist 'Quais imagens deseja instalar:' \
-	0 0 0 \
-	Windows '' ON  \
-	Linux '' ON  )
+            opcao=$(zenity --width=400 --height=400 --text="Quais imagens deseja instalar?" --list --checklist --column " " --column "Opcoes" TRUE Windows TRUE Linux)
 
-	# De acordo com a opção escolhida, executa funcoes
-	case $opcao in
-		'"Windows"') instala_windows;;
-		'"Linux"') instala_linux;;
-		'"Windows" "Linux"') instala;;
-	esac
-	
+        # De acordo com a opção escolhida, executa funcoes
+        case $opcao in
+                "Windows") instala_windows;;
+                "Linux") instala_linux;;
+                "Windows|Linux") instala;;
+        esac
+
 }
 
 #Checklist de seleção.
 menu_baixa_imagens() {
 
-	opcao=$( dialog --stdout \
-	--ok-label 'Confirmar'   \
-	--checklist 'Quais imagens deseja baixar:' \
-	0 0 0 \
-	Windows '' ON  \
-	Linux '' ON )
+       opcao=$(zenity --width=400 --height=400 --text="Quais imagens deseja baixar?" --list --checklist --column " " --column "Opcoes" TRUE Windows TRUE Linux)
 
 	# De acordo com a opção escolhida, executa funcoes
 	case $opcao in
-		'"Windows"') baixa_imagem_windows && instala_windows;;
-		'"Linux"') baixa_imagem_linux && instala_linux;;
-		'"Windows" "Linux"') baixa_imagens && instala;;
+		"Windows") baixa_imagem_windows && instala_windows;;
+		"Linux") baixa_imagem_linux && instala_linux;;
+		"Windows|Linux") baixa_imagens && instala;;
 	esac
 	
 }
 
 #Menu principal.
 menu() {
+        while : ; do
+        opcao=$(zenity --width=400 --height=400 --list --column "RISO - 0.5" \
+                --title="Menu" \
+              "Instalar imagens ja existentes"   \
+               "Baixar e instalar novas imagens"  \
+"Baixar e instalar imagem de recuperação(LIVE_CD)"\
+                     "Atualiza"                  \
+                     "Configurações"             \
+                     "Creditos"                   \
+                      "Help"                     )
 
-	while : ; do
-	opcao=$(
-		dialog --stdout                                         \
-		--ok-label 'Confirmar'                                  \
-		--cancel-label 'Sair'                                   \
-		--title 'RISO - 0.5'                                    \
-		--menu 'Escolha o que voce quer fazer:'                 \
-			0 0 0                                               \
-			1 'Instalar imagens ja existentes'                  \
-			2 'Baixar e instalar novas imagens'                 \
-			3 'Baixar e instalar imagem de recuperação(LIVE_CD)'\
-			4 'Atualiza'                                        \
-			5 'Configurações'                                   \
-			6 'Creditos'                                        \
-			7 'Help'                                            )
-	
-		# ESC, sai do programa...
-		[ $? -ne 0 ] && break
-	
-		# De acordo com a opção escolhida, executa funçao
-		case $opcao in
-		1) menu_instala_imagens;;
-		2) menu_baixa_imagens;;
-		3) baixa_rec; instala_rec;;
-		4) atualiza;;
-		5) configuracoes;;
-		6) creditos;;
-		7) helpi;;
-	esac	
+                # ESC, sai do programa...
+                [ $? -ne 0 ] && break
 
-	done
-	
+                # De acordo com a opção escolhida, executa funçao
+                case $opcao in
+                "Instalar imagens ja existentes" ) menu_instala_imagens;;
+                "Baixar e instalar novas imagens") menu_baixa_imagens;;
+                "Baixar e instalar imagem de recuperação(LIVE_CD)") baixa_rec; instala_rec;;
+                "Atualiza") atualiza;;
+                "Configurações") configuracoes;;
+                "Creditos") creditos;;
+                "Help") helpi;;
+        esac
+
+        done
+
 }
 
 #Avalia argumentos.
@@ -763,5 +657,6 @@ if [ $USER == '0' ]; then
 	log "Encerrando RISO -------------------------------------------------------"
 	clear
 else
-	echo 'Só o root pode fazer isso, jovenzinho!'
+	zenity --error --text="Só o root pode fazer isso, jovenzinho!"
+	gksudo riso
 fi
